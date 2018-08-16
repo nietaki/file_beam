@@ -1,9 +1,9 @@
 defmodule FileBeam.WWW do
-  use Ace.HTTP.Service, [port: 8080, cleartext: true]
+  use Ace.HTTP.Service, cleartext: true
 
   use Raxx.Router, [
     {%{method: :GET, path: []}, FileBeam.WWW.HomePage},
-    {%{method: :POST, path: ["upload"]}, FileBeam.WWW.Upload},
+    {%{method: :POST, path: ["upload", _buid]}, FileBeam.WWW.Upload},
     {_, FileBeam.WWW.NotFoundPage}
   ]
 

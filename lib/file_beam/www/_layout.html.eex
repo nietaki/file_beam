@@ -1,3 +1,4 @@
+<% _ = assigns %>
 <!DOCTYPE html>
 <html>
   <head>
