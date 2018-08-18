@@ -1,5 +1,6 @@
 defmodule FileBeam.Application do
   @moduledoc false
+  alias FileBeam.Core.FileBuffer
 
   use Application
 
@@ -16,11 +17,22 @@ defmodule FileBeam.Application do
 
     children = [
       Supervisor.child_spec({FileBeam.WWW, [config, cleartext_options]}, id: :www_cleartext),
-      Supervisor.child_spec({FileBeam.WWW, [config, secure_options]}, id: :www_secure)
+      Supervisor.child_spec({FileBeam.WWW, [config, secure_options]}, id: :www_secure),
+      Supervisor.child_spec({Registry, [keys: :unique, name: BufferRegistry]}, []),
+      {DynamicSupervisor, strategy: :one_for_one, name: BufferSupervisor}
     ]
 
     opts = [strategy: :one_for_one, name: FileBeam.Supervisor]
     Supervisor.start_link(children, opts)
+  end
+
+  def buffer_server_reference(buid) when is_binary(buid) do
+    {:via, Registry, {BufferRegistry, buid}}
+  end
+
+  def start_buffer_server(buid) when is_binary(buid) do
+    opts = [name: buffer_server_reference(buid), buid: buid]
+    DynamicSupervisor.start_child(BufferSupervisor, {FileBuffer, opts})
   end
 
   defp port() do
