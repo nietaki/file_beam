@@ -10,6 +10,6 @@ defmodule FileBeam.WWW.HomePageTest do
 
     assert response.status == 200
     assert response.headers == [{"content-type", "text/html"}]
-    assert String.contains?(response.body, "Raxx.Kit")
+    assert String.contains?(response.body, "beam")
   end
 end

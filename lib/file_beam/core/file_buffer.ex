@@ -53,12 +53,12 @@ defmodule FileBeam.Core.FileBuffer do
   @impl GenServer
   def handle_call({:upload_chunk, chunk}, _from, state) when is_binary(chunk) do
     state = %{state | queue: chunk}
-    {:reply, :ok, state}
+    {:reply, {:ok, :uploaded}, state}
   end
 
   @impl GenServer
   def handle_call(:download_chunk, _from, state) do
-    {:reply, state.queue, state}
+    {:reply, {:ok, state.queue}, state}
   end 
 
   # handle :DOWN messages from downloader/uploader
