@@ -31,7 +31,7 @@ defmodule FileBeam.Application do
   end
 
   def start_buffer_server(buid) when is_binary(buid) do
-    opts = [name: buffer_server_reference(buid), buid: buid]
+    opts = [name: buffer_server_reference(buid), buid: buid, uploader_pid: self()]
     DynamicSupervisor.start_child(BufferSupervisor, {FileBuffer, opts})
   end
 

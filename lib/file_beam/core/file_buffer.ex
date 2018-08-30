@@ -14,15 +14,7 @@ defmodule FileBeam.Core.FileBuffer do
     :queue
   ]
 
-  def start_link(opts) do
-    GenServer.start_link(__MODULE__, opts, opts)
-  end
-
-  @impl GenServer 
-  def init(opts) do
-    IO.puts "FileBuffer started with opts #{inspect opts}"
-    {:ok, %__MODULE__{}}
-  end
+  # Public Inteface
 
   @doc """
   Blocking if the buffer fills up - do {:noreturn, _, _}
@@ -38,8 +30,28 @@ defmodule FileBeam.Core.FileBuffer do
     GenServer.call(server_reference, :download_chunk)
   end
 
+  def start_link(opts) do
+    GenServer.start_link(__MODULE__, opts, opts)
+  end
+
+  # Implementation
+
+  @impl GenServer 
+  def init(opts) do
+    uploader_pid = Keyword.fetch!(opts, :uploader_pid)
+    IO.puts "FileBuffer started with opts #{inspect opts}"
+    Process.monitor(uploader_pid)
+    state =
+      %__MODULE__{
+        uploader_state: {:connected, uploader_pid}
+      }
+    {:ok, state}
+  end
+
+
+
   @impl GenServer
-  def handle_call({:upload_chunk, chunk}, _from, state) do
+  def handle_call({:upload_chunk, chunk}, _from, state) when is_binary(chunk) do
     state = %{state | queue: chunk}
     {:reply, :ok, state}
   end
@@ -53,6 +65,6 @@ defmodule FileBeam.Core.FileBuffer do
   @impl GenServer 
   def handle_info(msg, state) do
     IO.puts "FileBuffer server got info: #{inspect msg}"
-    {:ok, state}
+    {:noreply, state}
   end
 end

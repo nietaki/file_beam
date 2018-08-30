@@ -7,17 +7,16 @@ defmodule FileBeam.WWW.Upload do
     IO.puts("upload")
     IO.inspect(request)
 
-    IO.inspect FileBeam.Application.start_buffer_server(buid)
+    {:ok, pid} = IO.inspect FileBeam.Application.start_buffer_server(buid)
     {[], :state}
   end
 
   @impl Raxx.Server
   def handle_data(chunk, _state) do
-    # IO.inspect chunk
     IO.puts("received chunk")
     IO.puts("chunk size: #{byte_size(chunk) / 1024} KB")
-    Process.sleep(100)
-    {[], :statee}
+    Process.sleep(10000)
+    {[], :state}
   end
 
   @impl Raxx.Server
