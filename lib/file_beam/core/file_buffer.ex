@@ -36,19 +36,18 @@ defmodule FileBeam.Core.FileBuffer do
 
   # Implementation
 
-  @impl GenServer 
+  @impl GenServer
   def init(opts) do
     uploader_pid = Keyword.fetch!(opts, :uploader_pid)
-    IO.puts "FileBuffer started with opts #{inspect opts}"
+    IO.puts("FileBuffer started with opts #{inspect(opts)}")
     Process.monitor(uploader_pid)
-    state =
-      %__MODULE__{
-        uploader_state: {:connected, uploader_pid}
-      }
+
+    state = %__MODULE__{
+      uploader_state: {:connected, uploader_pid}
+    }
+
     {:ok, state}
   end
-
-
 
   @impl GenServer
   def handle_call({:upload_chunk, chunk}, _from, state) when is_binary(chunk) do
@@ -59,12 +58,12 @@ defmodule FileBeam.Core.FileBuffer do
   @impl GenServer
   def handle_call(:download_chunk, _from, state) do
     {:reply, {:ok, state.queue}, state}
-  end 
+  end
 
   # handle :DOWN messages from downloader/uploader
-  @impl GenServer 
+  @impl GenServer
   def handle_info(msg, state) do
-    IO.puts "FileBuffer server got info: #{inspect msg}"
+    IO.puts("FileBuffer server got info: #{inspect(msg)}")
     {:noreply, state}
   end
 end
