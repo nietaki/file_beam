@@ -5,7 +5,7 @@ defmodule FileBeam.Mixfile do
     [
       app: :file_beam,
       version: "0.1.0",
-      elixir: "~> 1.6.4",
+      elixir: "~> 1.6",
       elixirc_options: [
         # warnings_as_errors: true
       ],

@@ -17,8 +17,11 @@ defmodule FileBeam.Core.FileBuffer do
   @type t :: %__MODULE__{
           uploader: peer_state(),
           downloader: peer_state(),
-          queue: term()
+          queue: [] | [binary]
         }
+
+  # NOTE: the uploader will block when the buffer gets to @max_queue_size
+  @max_queue_size 5
 
   # ===========================================================================
   # Public API
@@ -61,7 +64,9 @@ defmodule FileBeam.Core.FileBuffer do
     Process.monitor(uploader_pid)
 
     state = %__MODULE__{
-      uploader: :connected
+      uploader: :connected,
+      downloader: nil,
+      queue: []
     }
 
     {:ok, state}
@@ -86,10 +91,21 @@ defmodule FileBeam.Core.FileBuffer do
   # Upload chunk
   # ---------------------------------------------------------------------------
 
-  @impl GenServer
-  def handle_call({:upload_chunk, chunk}, _from, state) when is_binary(chunk) do
-    state = %{state | queue: chunk}
-    {:reply, {:ok, :uploaded}, state}
+  def handle_call({:upload_chunk, chunk}, from, state = %{queue: queue}) when is_binary(chunk) do
+    queue = queue ++ [chunk]
+
+    state =
+      %{state | queue: queue}
+      |> maybe_handle_waiting_downloader()
+
+    case Enum.count(queue) do
+      short when short < @max_queue_size ->
+        {:reply, {:ok, :uploaded}, state}
+
+      _full ->
+        state = %__MODULE__{state | uploader: {:waiting, from}}
+        {:noreply, state}
+    end
   end
 
   # ---------------------------------------------------------------------------
@@ -97,8 +113,19 @@ defmodule FileBeam.Core.FileBuffer do
   # ---------------------------------------------------------------------------
 
   @impl GenServer
-  def handle_call(:download_chunk, _from, state = %__MODULE__{downloader: :connected}) do
-    {:reply, {:ok, state.queue}, state}
+  def handle_call(:download_chunk, from, state = %__MODULE__{downloader: :connected}) do
+    case state.queue do
+      [] ->
+        state = %__MODULE__{state | downloader: {:waiting, from}}
+        {:noreply, state}
+
+      [first | rest] ->
+        state =
+          %__MODULE__{state | queue: rest}
+          |> maybe_handle_waiting_uploader()
+
+        {:reply, {:ok, first}, state}
+    end
   end
 
   def handle_call(:download_chunk, _from, state = %__MODULE__{downloader: nil}) do
@@ -110,5 +137,41 @@ defmodule FileBeam.Core.FileBuffer do
   def handle_info(msg, state) do
     IO.puts("FileBuffer server got info: #{inspect(msg)}")
     {:noreply, state}
+  end
+
+  # ===========================================================================
+  # Pure helpers
+  # ===========================================================================
+
+  @spec maybe_handle_waiting_downloader(t()) :: t()
+  defp maybe_handle_waiting_downloader(state = %__MODULE__{downloader: {:waiting, from}}) do
+    case state.queue do
+      [] ->
+        state
+
+      [first | rest] ->
+        GenServer.reply(from, {:ok, first})
+        %__MODULE__{state | downloader: :connected}
+    end
+  end
+
+  defp maybe_handle_waiting_downloader(state) do
+    state
+  end
+
+  @spec maybe_handle_waiting_uploader(t()) :: t()
+  defp maybe_handle_waiting_uploader(state = %__MODULE__{uploader: {:waiting, from}}) do
+    case Enum.count(state.queue) do
+      @max_queue_size ->
+        state
+
+      decreased when decreased < @max_queue_size ->
+        GenServer.reply(from, {:ok, :uploaded})
+        %__MODULE__{state | uploader: :connected}
+    end
+  end
+
+  defp maybe_handle_waiting_uploader(state) do
+    state
   end
 end

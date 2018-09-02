@@ -38,8 +38,59 @@ defmodule FileBeam.Core.FileBufferTest do
     assert {:ok, "bar"} = FileBuffer.download_chunk(pid)
   end
 
+  test "buffer blocks when downloader requests more chunks and there is none in the buffer" do
+    pid = spawn_file_buffer()
+    FileBuffer.register_downloader(pid)
+    assert {:ok, :uploaded} = FileBuffer.upload_chunk(pid, "foo")
+    assert {:ok, "foo"} = FileBuffer.download_chunk(pid)
+
+    download_task = Task.async(fn -> FileBuffer.download_chunk(pid) end)
+    refute done?(download_task)
+    # make sure it's not a race condition
+    Process.sleep(10)
+    refute done?(download_task)
+
+    assert {:ok, :uploaded} = FileBuffer.upload_chunk(pid, "bar")
+    assert {:ok, "bar"} = result!(download_task)
+    assert done?(download_task)
+  end
+
+  test "buffer blocks when it gets full" do
+    pid = spawn_file_buffer()
+    assert {:ok, :uploaded} = FileBuffer.upload_chunk(pid, "foo")
+    assert {:ok, :uploaded} = FileBuffer.upload_chunk(pid, "bar")
+    assert {:ok, :uploaded} = FileBuffer.upload_chunk(pid, "baz")
+    assert {:ok, :uploaded} = FileBuffer.upload_chunk(pid, "ban")
+
+    upload_task =
+      Task.async(fn ->
+        FileBuffer.upload_chunk(pid, "bak")
+      end)
+
+    Process.sleep(10)
+    refute done?(upload_task)
+
+    FileBuffer.register_downloader(pid)
+    assert {:ok, "foo"} = FileBuffer.download_chunk(pid)
+    assert {:ok, :uploaded} = result!(upload_task)
+    assert {:ok, "bar"} = FileBuffer.download_chunk(pid)
+    assert {:ok, "baz"} = FileBuffer.download_chunk(pid)
+  end
+
+  # ===========================================================================
+  # Helper functions
+  # ===========================================================================
+
   defp spawn_file_buffer() do
     assert {:ok, pid} = FileBuffer.start_link(uploader_pid: self())
     pid
+  end
+
+  defp done?(task) do
+    !Process.alive?(task.pid)
+  end
+
+  defp result!(task) do
+    Task.await(task, 10)
   end
 end
