@@ -31,6 +31,10 @@ defmodule FileBeam.Core.FileBuffer do
     GenServer.call(server_reference, {:upload_chunk, chunk}, :infinity)
   end
 
+  def signal_upload_done(server_reference) do
+    GenServer.call(server_reference, :upload_done)
+  end
+
   def download_chunk(server_reference) do
     GenServer.call(server_reference, :download_chunk, :infinity)
   end
@@ -100,17 +104,44 @@ defmodule FileBeam.Core.FileBuffer do
   end
 
   # ---------------------------------------------------------------------------
+  # Upload done
+  # ---------------------------------------------------------------------------
+
+  def handle_call(:upload_done, _from, state = %__MODULE__{uploader: :connected}) do
+    IO.puts("Upload done!")
+
+    state =
+      %{state | uploader: :done}
+      |> maybe_handle_waiting_downloader()
+
+    {:reply, {:ok, :acknowledged}, state}
+  end
+
+  # ---------------------------------------------------------------------------
   # Download chunk
   # ---------------------------------------------------------------------------
 
-  @impl GenServer
+  def handle_call(
+        :download_chunk,
+        _from,
+        state = %__MODULE__{downloader: :connected, uploader: :done, queue: []}
+      ) do
+    state = %{state | downloader: :done}
+    {:reply, {:ok, :complete}, state}
+  end
+
   def handle_call(:download_chunk, from, state = %__MODULE__{downloader: :connected}) do
+    IO.puts("download_chunk")
+
     case state.queue do
       [] ->
+        IO.puts("blocking")
         state = %__MODULE__{state | downloader: {:waiting, from}}
         {:noreply, state}
 
       [first | rest] ->
+        IO.puts("sending")
+
         state =
           %__MODULE__{state | queue: rest}
           |> maybe_handle_waiting_uploader()
@@ -135,6 +166,15 @@ defmodule FileBeam.Core.FileBuffer do
   # ===========================================================================
 
   @spec maybe_handle_waiting_downloader(t()) :: t()
+  # TODO test this case
+  defp maybe_handle_waiting_downloader(
+         state = %__MODULE__{downloader: {:waiting, from, uploader: :done, queue: []}}
+       ) do
+    IO.puts("telling waiting downloader the whole thing is finished")
+    GenServer.reply(from, {:ok, :complete})
+    %{state | downloader: :done}
+  end
+
   defp maybe_handle_waiting_downloader(state = %__MODULE__{downloader: {:waiting, from}}) do
     case state.queue do
       [] ->

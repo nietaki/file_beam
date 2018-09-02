@@ -9,7 +9,7 @@ defmodule FileBeam.WWW.Upload do
   @impl Raxx.Server
   def handle_head(request = %{path: ["upload", buid]}, _state) do
     IO.inspect(buid)
-    IO.puts("upload: #{inspect self()}")
+    IO.puts("upload: #{inspect(self())}")
     IO.inspect(request)
 
     {:ok, buffer_pid} = FileBeam.Application.start_buffer_server(buid)
@@ -25,8 +25,9 @@ defmodule FileBeam.WWW.Upload do
   end
 
   @impl Raxx.Server
-  def handle_tail(_trailers, _state) do
-    IO.puts "finishing upload!"
+  def handle_tail(_trailers, state = %{buffer_pid: buffer_pid}) do
+    IO.puts("finishing upload!")
+    FileBuffer.signal_upload_done(buffer_pid)
     response(:no_content)
   end
 end

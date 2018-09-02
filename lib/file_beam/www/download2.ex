@@ -11,7 +11,7 @@ defmodule FileBeam.WWW.Download2 do
     IO.puts("download")
     IO.inspect(request)
 
-    outbound = 
+    outbound =
       response(:ok)
       |> set_header("content-disposition", "attachment")
       |> set_body(true)
@@ -23,14 +23,14 @@ defmodule FileBeam.WWW.Download2 do
 
   @impl Raxx.Server
   def handle_data(chunk, state) do
-    IO.puts "download data: #{chunk}"
+    IO.puts("download data: #{chunk}")
     {[data("foo")], state}
   end
 
   @impl Raxx.Server
   def handle_tail(trailers, state) do
     # TODO
-    IO.puts "tail: #{inspect(trailers)}"
+    IO.puts("tail: #{inspect(trailers)}")
     {[tail()], state}
   end
 end
