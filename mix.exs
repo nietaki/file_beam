@@ -27,6 +27,7 @@ defmodule FileBeam.Mixfile do
       {:raxx_static, "~> 0.6.1"},
       # {:exsync, "~> 0.2.3", only: :dev},
       {:dialyxir, "~> 0.5.1", only: [:dev, :test], runtime: false},
+      {:mix_test_watch, "~> 0.8", only: :dev, runtime: false},
       {:wobserver, "~> 0.1.8"}
     ]
   end

@@ -7,7 +7,7 @@ defmodule FileBeam.WWW.Upload do
     IO.puts("upload")
     IO.inspect(request)
 
-    {:ok, pid} = IO.inspect(FileBeam.Application.start_buffer_server(buid))
+    {:ok, _pid} = IO.inspect(FileBeam.Application.start_buffer_server(buid))
     {[], :state}
   end
 
