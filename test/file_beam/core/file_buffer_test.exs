@@ -53,6 +53,8 @@ defmodule FileBeam.Core.FileBufferTest do
     assert {:ok, :uploaded} = FileBuffer.upload_chunk(pid, "bar")
     assert {:ok, "bar"} = result!(download_task)
     assert done?(download_task)
+    assert {:ok, :uploaded} = FileBuffer.upload_chunk(pid, "baz")
+    assert {:ok, "baz"} = FileBuffer.download_chunk(pid)
   end
 
   test "buffer blocks when it gets full" do

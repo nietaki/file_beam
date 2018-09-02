@@ -1,26 +1,32 @@
 defmodule FileBeam.WWW.Upload do
   use Raxx.Server
+  alias FileBeam.Core.FileBuffer
+
+  defstruct [
+    :buffer_pid
+  ]
 
   @impl Raxx.Server
   def handle_head(request = %{path: ["upload", buid]}, _state) do
     IO.inspect(buid)
-    IO.puts("upload")
+    IO.puts("upload: #{inspect self()}")
     IO.inspect(request)
 
-    {:ok, _pid} = IO.inspect(FileBeam.Application.start_buffer_server(buid))
-    {[], :state}
+    {:ok, buffer_pid} = FileBeam.Application.start_buffer_server(buid)
+    {[], %__MODULE__{buffer_pid: buffer_pid}}
   end
 
   @impl Raxx.Server
-  def handle_data(chunk, _state) do
-    IO.puts("received chunk")
-    IO.puts("chunk size: #{byte_size(chunk) / 1024} KB")
-    Process.sleep(10000)
-    {[], :state}
+  def handle_data(chunk, state = %{buffer_pid: buffer_pid}) do
+    IO.puts("received chunk, chunk size: #{byte_size(chunk) / 1024} KB")
+    FileBuffer.upload_chunk(buffer_pid, chunk)
+    IO.puts("uploaded chunk")
+    {[], state}
   end
 
   @impl Raxx.Server
   def handle_tail(_trailers, _state) do
+    IO.puts "finishing upload!"
     response(:no_content)
   end
 end

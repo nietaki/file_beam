@@ -35,6 +35,13 @@ defmodule FileBeam.Application do
     DynamicSupervisor.start_child(BufferSupervisor, {FileBuffer, opts})
   end
 
+  def lookup_buffer_server(buid) do
+    case Registry.lookup(BufferRegistry, buid) do
+      [{pid, nil}] -> {:ok, pid}
+      [] -> {:error, :not_found}
+    end
+  end
+
   defp port() do
     with raw when is_binary(raw) <- System.get_env("PORT"), {port, ""} = Integer.parse(raw) do
       port

@@ -4,6 +4,7 @@ defmodule FileBeam.WWW do
   use Raxx.Router, [
     {%{method: :GET, path: []}, FileBeam.WWW.HomePage},
     {%{method: :POST, path: ["upload", _buid]}, FileBeam.WWW.Upload},
+    {%{method: :GET, path: ["download", _buid]}, FileBeam.WWW.Download},
     {_, FileBeam.WWW.NotFoundPage}
   ]
 

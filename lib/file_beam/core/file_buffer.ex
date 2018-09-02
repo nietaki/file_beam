@@ -27,23 +27,14 @@ defmodule FileBeam.Core.FileBuffer do
   # Public API
   # ===========================================================================
 
-  @doc """
-  Blocking if the buffer fills up - do {:noreturn, _, _}
-  """
   def upload_chunk(server_reference, chunk) do
-    GenServer.call(server_reference, {:upload_chunk, chunk})
+    GenServer.call(server_reference, {:upload_chunk, chunk}, :infinity)
   end
 
-  @doc """
-  Just as blocking
-  """
   def download_chunk(server_reference) do
-    GenServer.call(server_reference, :download_chunk)
+    GenServer.call(server_reference, :download_chunk, :infinity)
   end
 
-  @doc """
-  Making sure there
-  """
   def register_downloader(server_reference) do
     GenServer.call(server_reference, :register_downloader)
   end
@@ -151,7 +142,7 @@ defmodule FileBeam.Core.FileBuffer do
 
       [first | rest] ->
         GenServer.reply(from, {:ok, first})
-        %__MODULE__{state | downloader: :connected}
+        %__MODULE__{state | downloader: :connected, queue: rest}
     end
   end
 
