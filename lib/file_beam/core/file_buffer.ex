@@ -3,10 +3,10 @@ defmodule FileBeam.Core.FileBuffer do
 
   @type peer_state ::
           nil
-          | {:connected, pid()}
+          | :connected
           | {:waiting, from :: {pid(), tag :: term}}
-          | {:done, pid}
-          | {:dead, pid}
+          | :done
+          | :dead
 
   defstruct [
     :uploader_state,
@@ -33,6 +33,8 @@ defmodule FileBeam.Core.FileBuffer do
   def start_link(opts) do
     GenServer.start_link(__MODULE__, opts, opts)
   end
+
+  # TODO connect downloader
 
   # Implementation
 
