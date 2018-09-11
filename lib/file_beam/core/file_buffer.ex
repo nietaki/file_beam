@@ -132,7 +132,6 @@ defmodule FileBeam.Core.FileBuffer do
   end
 
   def handle_call(:download_chunk, from, state = %__MODULE__{downloader: :connected}) do
-
     case state.queue do
       [] ->
         Logger.info("blocking on download")
@@ -147,7 +146,6 @@ defmodule FileBeam.Core.FileBuffer do
         {:reply, {:ok, first}, state}
     end
   end
-
 
   def handle_call(:download_chunk, _from, state = %__MODULE__{downloader: nil}) do
     {:reply, {:error, :downloader_not_registered}, state}

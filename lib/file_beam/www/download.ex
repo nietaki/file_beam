@@ -24,7 +24,6 @@ defmodule FileBeam.WWW.Download do
 
     send(self(), :more)
     {[headers], state}
-    {[set_body(response(:ok), true)], :state}
   end
 
   def handle_info(:more, state = %{buffer_pid: buffer_pid}) do
