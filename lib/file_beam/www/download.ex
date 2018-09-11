@@ -1,21 +1,12 @@
 defmodule FileBeam.WWW.Download do
   require Logger
-  # use Raxx.Server
-
-  @behaviour Raxx.Server
-
-  use Raxx.NotFound, []
-
-  import Raxx
-  alias Raxx.{Request, Response}
-  # END use Raxx.Server
+  use Raxx.Server
   alias FileBeam.Core.FileBuffer
 
   defstruct [
     :buffer_pid
   ]
 
-  @impl Raxx.Server
   def handle_request(request = %{path: ["download", buid]}, _state) do
     IO.inspect(buid)
     IO.puts("download: #{inspect(self())}")
@@ -36,7 +27,6 @@ defmodule FileBeam.WWW.Download do
     {[set_body(response(:ok), true)], :state}
   end
 
-  @impl Raxx.Server
   def handle_info(:more, state = %{buffer_pid: buffer_pid}) do
     Logger.info("more")
     {:ok, chunk} = FileBuffer.download_chunk(buffer_pid)
