@@ -1,6 +1,14 @@
 defmodule FileBeam.WWW.Download do
   require Logger
-  use Raxx.Server
+  # use Raxx.Server
+
+  @behaviour Raxx.Server
+
+  use Raxx.NotFound, []
+
+  import Raxx
+  alias Raxx.{Request, Response}
+  # END use Raxx.Server
   alias FileBeam.Core.FileBuffer
 
   defstruct [
@@ -25,6 +33,7 @@ defmodule FileBeam.WWW.Download do
 
     send(self(), :more)
     {[headers], state}
+    {[set_body(response(:ok), true)], :state}
   end
 
   @impl Raxx.Server

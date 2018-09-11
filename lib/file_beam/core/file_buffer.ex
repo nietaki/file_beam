@@ -1,4 +1,5 @@
 defmodule FileBeam.Core.FileBuffer do
+  require Logger
   use GenServer
 
   defstruct [
@@ -55,7 +56,7 @@ defmodule FileBeam.Core.FileBuffer do
   @spec init(Keyword.t()) :: {:ok, t()}
   def init(opts) do
     uploader_pid = Keyword.fetch!(opts, :uploader_pid)
-    IO.puts("FileBuffer started with opts #{inspect(opts)}")
+    Logger.info("FileBuffer started with opts #{inspect(opts)}")
     Process.monitor(uploader_pid)
 
     state = %__MODULE__{
@@ -108,7 +109,7 @@ defmodule FileBeam.Core.FileBuffer do
   # ---------------------------------------------------------------------------
 
   def handle_call(:upload_done, _from, state = %__MODULE__{uploader: :connected}) do
-    IO.puts("Upload done!")
+    Logger.info("Upload done!")
 
     state =
       %{state | uploader: :done}
@@ -131,17 +132,14 @@ defmodule FileBeam.Core.FileBuffer do
   end
 
   def handle_call(:download_chunk, from, state = %__MODULE__{downloader: :connected}) do
-    IO.puts("download_chunk")
 
     case state.queue do
       [] ->
-        IO.puts("blocking")
+        Logger.info("blocking on download")
         state = %__MODULE__{state | downloader: {:waiting, from}}
         {:noreply, state}
 
       [first | rest] ->
-        IO.puts("sending")
-
         state =
           %__MODULE__{state | queue: rest}
           |> maybe_handle_waiting_uploader()
@@ -150,14 +148,19 @@ defmodule FileBeam.Core.FileBuffer do
     end
   end
 
+
   def handle_call(:download_chunk, _from, state = %__MODULE__{downloader: nil}) do
     {:reply, {:error, :downloader_not_registered}, state}
   end
 
-  # handle :DOWN messages from downloader/uploader
+  # ===========================================================================
+  # handlle_info
+  # ===========================================================================
+
+  # TODO: handle :DOWN messages from downloader/uploader
   @impl GenServer
   def handle_info(msg, state) do
-    IO.puts("FileBuffer server got info: #{inspect(msg)}")
+    Logger.info("FileBuffer server got info: #{inspect(msg)}")
     {:noreply, state}
   end
 
@@ -166,11 +169,10 @@ defmodule FileBeam.Core.FileBuffer do
   # ===========================================================================
 
   @spec maybe_handle_waiting_downloader(t()) :: t()
-  # TODO test this case
   defp maybe_handle_waiting_downloader(
-         state = %__MODULE__{downloader: {:waiting, from, uploader: :done, queue: []}}
+         state = %__MODULE__{downloader: {:waiting, from}, uploader: :done, queue: []}
        ) do
-    IO.puts("telling waiting downloader the whole thing is finished")
+    Logger.info("telling waiting downloader the whole thing is finished")
     GenServer.reply(from, {:ok, :complete})
     %{state | downloader: :done}
   end

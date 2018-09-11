@@ -79,6 +79,43 @@ defmodule FileBeam.Core.FileBufferTest do
     assert {:ok, "baz"} = FileBuffer.download_chunk(pid)
   end
 
+  test "uploader finishing while downloader isn't waiting" do
+    pid = spawn_file_buffer()
+    assert {:ok, :uploaded} = FileBuffer.upload_chunk(pid, "foo")
+    assert {:ok, _} = FileBuffer.signal_upload_done(pid)
+    FileBuffer.register_downloader(pid)
+    assert {:ok, "foo"} = FileBuffer.download_chunk(pid)
+    assert {:ok, :complete} = FileBuffer.download_chunk(pid)
+  end
+
+  test "uploader finishing while downloader is waiting" do
+    pid = spawn_file_buffer()
+    FileBuffer.register_downloader(pid)
+
+    download_task_1 =
+      Task.async(fn ->
+        FileBuffer.download_chunk(pid)
+      end)
+
+    assert {:ok, :uploaded} = FileBuffer.upload_chunk(pid, "foo")
+
+    Process.sleep(10)
+    assert done?(download_task_1)
+    assert {:ok, "foo"} = result!(download_task_1)
+
+    download_task_2 =
+      Task.async(fn ->
+        FileBuffer.download_chunk(pid)
+      end)
+
+    Process.sleep(10)
+
+    refute done?(download_task_2)
+    assert {:ok, _} = FileBuffer.signal_upload_done(pid)
+
+    assert {:ok, :complete} = result!(download_task_2)
+  end
+
   # ===========================================================================
   # Helper functions
   # ===========================================================================
@@ -93,6 +130,6 @@ defmodule FileBeam.Core.FileBufferTest do
   end
 
   defp result!(task) do
-    Task.await(task, 10)
+    Task.await(task, 100)
   end
 end
