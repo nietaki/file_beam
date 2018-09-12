@@ -21,7 +21,6 @@ defmodule FileBeam.WWW.Download do
     {:ok, buffer_pid} = FileBeam.Application.lookup_buffer_server(buid)
     {:ok, _} = FileBuffer.register_downloader(buffer_pid)
     state = %__MODULE__{buffer_pid: buffer_pid}
-
     send(self(), :more)
     {[headers], state}
   end

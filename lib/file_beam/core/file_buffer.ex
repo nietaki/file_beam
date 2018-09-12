@@ -5,7 +5,8 @@ defmodule FileBeam.Core.FileBuffer do
   defstruct [
     :uploader,
     :downloader,
-    :queue
+    :queue,
+    :metadata
   ]
 
   @type peer_state ::
@@ -18,7 +19,8 @@ defmodule FileBeam.Core.FileBuffer do
   @type t :: %__MODULE__{
           uploader: peer_state(),
           downloader: peer_state(),
-          queue: [] | [binary]
+          queue: [] | [binary],
+          metadata: map()
         }
 
   # NOTE: the uploader will block when the buffer gets to @max_queue_size
@@ -56,13 +58,15 @@ defmodule FileBeam.Core.FileBuffer do
   @spec init(Keyword.t()) :: {:ok, t()}
   def init(opts) do
     uploader_pid = Keyword.fetch!(opts, :uploader_pid)
+    metadata = %{} = Keyword.get(opts, :metadata, %{})
     Logger.info("FileBuffer started with opts #{inspect(opts)}")
     Process.monitor(uploader_pid)
 
     state = %__MODULE__{
       uploader: :connected,
       downloader: nil,
-      queue: []
+      queue: [],
+      metadata: metadata
     }
 
     {:ok, state}
@@ -76,7 +80,7 @@ defmodule FileBeam.Core.FileBuffer do
   @spec handle_call(term, term, t()) :: {:reply, term, t()} | {:noreply, t()}
   def handle_call(:register_downloader, _from, state = %__MODULE__{downloader: nil}) do
     state = %__MODULE__{state | downloader: :connected}
-    {:reply, {:ok, :connected}, state}
+    {:reply, {:ok, state.metadata}, state}
   end
 
   def handle_call(:register_downloader, _from, _ = state) do
