@@ -23,6 +23,7 @@ defmodule FileBeam.WWW.Download do
         "attachment; filename=\"#{metadata.original_filename}\""
       )
       |> set_header("content-type", metadata.original_content_type)
+      |> set_header("content-length", Integer.to_string(metadata.content_length))
       |> set_body(true)
 
     state = %__MODULE__{buffer_pid: buffer_pid}
