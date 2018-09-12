@@ -17,11 +17,12 @@ foo = function() {
   var fileInput = document.getElementById('the-file');
   console.log(fileInput.files); // A FileList with all selected files
   var file = fileInput.files[0];
-  console.log(file.fileName); // "my-holiday-photo.jpg"
+  console.log(file.name); // "my-holiday-photo.jpg"
   console.log(file.size); // 1282632
   console.log(file.type); // image/jpeg
   var xhr = new XMLHttpRequest();
   xhr.open('POST', '/upload/' + buid, true);
+  xhr.setRequestHeader('x-original-filename', file.name);
   xhr.send(file); // Simple!
 }
 </script>

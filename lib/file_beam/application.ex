@@ -30,8 +30,15 @@ defmodule FileBeam.Application do
     {:via, Registry, {BufferRegistry, buid}}
   end
 
-  def start_buffer_server(buid) when is_binary(buid) do
-    opts = [name: buffer_server_reference(buid), buid: buid, uploader_pid: self()]
+  def start_buffer_server(buid, opts \\ []) when is_binary(buid) do
+    opts =
+      Keyword.merge(
+        opts,
+        name: buffer_server_reference(buid),
+        buid: buid,
+        uploader_pid: self()
+      )
+
     DynamicSupervisor.start_child(BufferSupervisor, {FileBuffer, opts})
   end
 

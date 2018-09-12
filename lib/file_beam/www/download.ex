@@ -12,21 +12,25 @@ defmodule FileBeam.WWW.Download do
     IO.puts("download: #{inspect(self())}")
     IO.inspect(request)
 
+    {:ok, buffer_pid} = FileBeam.Application.lookup_buffer_server(buid)
+    {:ok, metadata} = FileBuffer.register_downloader(buffer_pid)
+    IO.inspect(metadata)
+
     headers =
       response(:ok)
-      |> set_header("content-disposition", "attachment")
-      |> set_header("content-type", "application/octet-stream")
+      |> set_header(
+        "content-disposition",
+        "attachment; filename=\"#{metadata.original_filename}\""
+      )
+      |> set_header("content-type", metadata.original_content_type)
       |> set_body(true)
 
-    {:ok, buffer_pid} = FileBeam.Application.lookup_buffer_server(buid)
-    {:ok, _} = FileBuffer.register_downloader(buffer_pid)
     state = %__MODULE__{buffer_pid: buffer_pid}
     send(self(), :more)
     {[headers], state}
   end
 
   def handle_info(:more, state = %{buffer_pid: buffer_pid}) do
-    Logger.info("more")
     {:ok, chunk} = FileBuffer.download_chunk(buffer_pid)
 
     case chunk do
