@@ -17,4 +17,5 @@ script:
   - echo skipping dialyzer check # mix dialyzer --halt-exit-status
 
 after_success:
-  - "docker build file_beam:$TRAVIS_COMMIT ."
+  - echo $TRAVIS_COMMIT
+  - "docker build -t file_beam:$TRAVIS_COMMIT ."
