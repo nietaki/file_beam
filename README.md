@@ -16,3 +16,7 @@
   - repeatedly asks for more
 
 If the uploader/downloader dies, the FileBuffer already monitors them, sends a failure message and waits for them to die.
+
+## Docker commands
+
+    docker-compose up

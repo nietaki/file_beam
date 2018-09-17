@@ -1,0 +1,13 @@
+version: '2'
+
+services:
+  file_beam:
+    build:
+      context: "."
+      dockerfile: "Dockerfile"
+    ports:
+      - 8080:8080
+      - 8443:8443
+    volumes:
+      - .:/opt/app
+
