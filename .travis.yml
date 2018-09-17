@@ -1,8 +1,11 @@
+sudo: required
 language: elixir
+services:
+  - docker
 elixir:
   - 1.6.4
 otp_release:
-  - 19.2
+  # - 19.2
   - 20.0
 env:
   - MIX_ENV=test
@@ -12,3 +15,6 @@ script:
   - mix test
   - mix format --check-formatted
   - echo skipping dialyzer check # mix dialyzer --halt-exit-status
+
+after_success:
+  - "docker build file_beam:$TRAVIS_COMMIT ."
