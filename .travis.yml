@@ -16,6 +16,12 @@ script:
   - mix format --check-formatted
   - echo skipping dialyzer check # mix dialyzer --halt-exit-status
 
+# https://docs.travis-ci.com/user/docker/
 after_success:
   - echo $TRAVIS_COMMIT
   - "docker build -t file_beam:$TRAVIS_COMMIT ."
+  - docker tag file_beam:$TRAVIS_COMMIT nietaki/file_beam:$TRAVIS_COMMIT
+  - docker images
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+  - docker push nietaki/file_beam:$TRAVIS_COMMIT
+  - docker images
