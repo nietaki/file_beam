@@ -22,7 +22,7 @@ defmodule FileBeam.WWW.Download do
         "content-disposition",
         "attachment; filename=\"#{metadata.original_filename}\""
       )
-      |> set_header("content-type", metadata.original_content_type)
+      |> maybe_set_header("content-type", metadata.original_content_type)
       |> set_header("content-length", Integer.to_string(metadata.content_length))
       |> set_body(true)
 
@@ -43,5 +43,13 @@ defmodule FileBeam.WWW.Download do
         send(self(), :more)
         {[data(chunk)], state}
     end
+  end
+
+  defp maybe_set_header(response, _header_name, nil) do
+    response
+  end
+
+  defp maybe_set_header(response, header_name, value) do
+    set_header(response, header_name, value)
   end
 end
