@@ -3,6 +3,7 @@
 - Install dependencies with `mix deps.get`
 - Start your service with `iex -S mix`
 - Run project test suite with `mix test`
+- You can see the wobserver at http://localhost:4001/
 
 ## Action Plan
 
