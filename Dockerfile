@@ -1,4 +1,4 @@
-FROM elixir:1.6.4
+FROM elixir:1.8.2
 
 # NOTE the WORKDIR should not be the users home dir as the will copy container cookie into host machine
 WORKDIR /opt/app
