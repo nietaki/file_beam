@@ -3,10 +3,10 @@ language: elixir
 services:
   - docker
 elixir:
-  - 1.6.4
+  - 1.8.2
 otp_release:
   # - 19.2
-  - 20.0
+  - 22.0.4
 env:
   - MIX_ENV=test
 before_script:
