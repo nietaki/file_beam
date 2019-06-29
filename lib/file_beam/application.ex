@@ -5,19 +5,17 @@ defmodule FileBeam.Application do
   use Application
 
   def start(_type, _args) do
-    config = %{}
     cleartext_options = [port: port(), cleartext: true]
 
     secure_options = [
       port: secure_port(),
-      cleartext: false,
       certfile: certificate_path(),
       keyfile: certificate_key_path()
     ]
 
     children = [
-      Supervisor.child_spec({FileBeam.WWW, [config, cleartext_options]}, id: :www_cleartext),
-      Supervisor.child_spec({FileBeam.WWW, [config, secure_options]}, id: :www_secure),
+      {FileBeam.WWW, [cleartext_options]},
+      {FileBeam.WWW, [secure_options]},
       Supervisor.child_spec({Registry, [keys: :unique, name: BufferRegistry]}, []),
       {DynamicSupervisor, strategy: :one_for_one, name: BufferSupervisor}
     ]

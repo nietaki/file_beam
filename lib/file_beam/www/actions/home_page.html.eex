@@ -1,0 +1,29 @@
+<main class="centered">
+  <section class="accent">
+    <h1>File beam</h1>
+    <input id="the-file" name="file" type="file" onchange="foo()" />
+    <a href="/download/<%= buid %>">future download link - <%= buid %> </a>
+    <nav>
+      <a href="https://github.com/nietaki/file_beam">SOURCE CODE</a>
+    </nav>
+  </section>
+</main>
+
+<%= javascript_variables buid: buid %>
+<script>
+ // buid = '<%= buid %>'
+
+
+ foo = function() {
+   var fileInput = document.getElementById('the-file');
+   console.log(fileInput.files); // A FileList with all selected files
+   var file = fileInput.files[0];
+   console.log(file.name); // "my-holiday-photo.jpg"
+   console.log(file.size); // 1282632
+   console.log(file.type); // image/jpeg
+   var xhr = new XMLHttpRequest();
+   xhr.open('POST', '/upload/' + buid, true);
+   xhr.setRequestHeader('x-original-filename', file.name);
+   xhr.send(file); // Simple!
+ }
+</script>

@@ -1,4 +1,4 @@
-defmodule FileBeam.WWW.Upload do
+defmodule FileBeam.WWW.Actions.Upload do
   use Raxx.Server
   alias FileBeam.Core.FileBuffer
 
@@ -35,10 +35,10 @@ defmodule FileBeam.WWW.Upload do
     response(:no_content)
   end
 
-  defp get_content_length(request) do
-    length_string = get_header(request, "content-length", "-1")
-    String.to_integer(length_string)
-  end
+  # defp get_content_length(request) do
+  #   length_string = get_header(request, "content-length", "-1")
+  #   String.to_integer(length_string)
+  # end
 
   defp get_original_filename(request) do
     get_header(request, "x-original-filename")

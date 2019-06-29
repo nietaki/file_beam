@@ -1,6 +1,0 @@
-<% _ = assigns %>
-<main class="centered">
-  <section class="accent">
-    <h1>Nothing here!</h1>
-  </section>
-</main>

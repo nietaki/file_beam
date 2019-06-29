@@ -20,4 +20,11 @@ If the uploader/downloader dies, the FileBuffer already monitors them, sends a f
 
 ## Docker commands
 
-    docker-compose up
+- Start the service with `docker-compose up`
+- Run project test suite with `docker-compose run file_beam mix test`
+- Start IEx session in running service
+      # Find a container id using docker ps
+      docker exec -it <container-id> bash
+
+      # In container
+      iex --sname debug --remsh app@$(hostname)

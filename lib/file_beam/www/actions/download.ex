@@ -1,4 +1,4 @@
-defmodule FileBeam.WWW.Download do
+defmodule FileBeam.WWW.Actions.Download do
   require Logger
   use Raxx.Server
   alias FileBeam.Core.FileBuffer
@@ -7,7 +7,7 @@ defmodule FileBeam.WWW.Download do
     :buffer_pid
   ]
 
-  def handle_request(request = %{path: ["download", buid]}, _state) do
+  def handle_head(request = %{path: ["download", buid]}, _state) do
     IO.inspect(buid)
     IO.puts("download: #{inspect(self())}")
     IO.inspect(request)
@@ -29,6 +29,14 @@ defmodule FileBeam.WWW.Download do
     state = %__MODULE__{buffer_pid: buffer_pid}
     send(self(), :more)
     {[headers], state}
+  end
+
+  def handle_data(_body, state) do
+    {[], state}
+  end
+
+  def handle_tail(_trailers, state) do
+    {[], state}
   end
 
   def handle_info(:more, state = %{buffer_pid: buffer_pid}) do
