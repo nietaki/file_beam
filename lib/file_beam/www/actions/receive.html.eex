@@ -1,0 +1,9 @@
+<main class="centered">
+  <section class="accent">
+    <h1>Receive the file!</h1>
+      <a href="/download/<%= buid %>">download link - <%= buid %> </a>
+    <nav>
+      <a href="https://github.com/nietaki/file_beam">SOURCE CODE</a>
+    </nav>
+  </section>
+</main>

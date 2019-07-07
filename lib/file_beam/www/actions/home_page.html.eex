@@ -1,20 +1,35 @@
 <main class="centered">
   <section class="accent">
     <h1>File beam</h1>
-    <input id="the-file" name="file" type="file" onchange="foo()" />
-    <a href="/download/<%= buid %>">future download link - <%= buid %> </a>
+    <input id="the-file" name="file" type="file" onchange="upload()" />
+    <div id="download_link_area" style="display: none">
+      <a href="/receive/<%= buid %>">receive link - <%= buid %> </a>
+      <br />
+      <a href="/download/<%= buid %>">download link - <%= buid %> </a>
+    </div>
     <nav>
       <a href="https://github.com/nietaki/file_beam">SOURCE CODE</a>
     </nav>
   </section>
 </main>
 
+<script type="text/javascript" src="/jquery-3.4.1.min.js" >
+</script>
+
 <%= javascript_variables buid: buid %>
 <script>
- // buid = '<%= buid %>'
 
+ errorHandler = function(event) {
+   console.log('error');
+   console.log(event);
+ }
 
- foo = function() {
+ successHandler = function(event) {
+   console.log('success');
+   console.log(event);
+ }
+
+ upload = function() {
    var fileInput = document.getElementById('the-file');
    console.log(fileInput.files); // A FileList with all selected files
    var file = fileInput.files[0];
@@ -22,8 +37,14 @@
    console.log(file.size); // 1282632
    console.log(file.type); // image/jpeg
    var xhr = new XMLHttpRequest();
+   // progress handler is about download progress :S
+   /* xhr.addEventListener('progress', progressHandler); */
+   xhr.addEventListener('error', errorHandler);
+   xhr.addEventListener('timeout', errorHandler);
+   xhr.addEventListener('load', successHandler);
    xhr.open('POST', '/upload/' + buid, true);
    xhr.setRequestHeader('x-original-filename', file.name);
    xhr.send(file); // Simple!
+   $("#download_link_area").show(20);
  }
 </script>
