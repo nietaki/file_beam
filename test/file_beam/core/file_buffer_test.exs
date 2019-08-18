@@ -94,9 +94,11 @@ defmodule FileBeam.Core.FileBufferTest do
     assert {:ok, :complete} = FileBuffer.download_chunk(pid)
   end
 
+  # if this test fails it's probably I introduced a delay in
+  # FileBuffer.download_chunk/1 for some experiments
   test "uploader finishing while downloader is waiting" do
     pid = spawn_file_buffer()
-    FileBuffer.register_downloader(pid)
+    {:ok, _} = FileBuffer.register_downloader(pid)
 
     download_task_1 =
       Task.async(fn ->
