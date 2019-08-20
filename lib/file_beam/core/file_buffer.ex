@@ -2,15 +2,42 @@ defmodule FileBeam.Core.FileBuffer do
   require Logger
   use GenServer
 
+  defmodule Stats do
+    defstruct [
+      :bytes_transferred,
+      :upload_started_at,
+      :download_started_at
+    ]
+
+    def new() do
+      %__MODULE__{
+        bytes_transferred: 0,
+        upload_started_at: DateTime.utc_now(),
+        download_started_at: nil
+      }
+    end
+
+    @type t :: %__MODULE__{
+            bytes_transferred: integer,
+            upload_started_at: DateTime.t(),
+            download_started_at: DateTime.t() | nil
+          }
+
+    def download_started(%__MODULE__{} = stats) do
+      %__MODULE__{stats | download_started_at: DateTime.utc_now()}
+    end
+
+    def bytes_transferred(%__MODULE__{} = stats, newly_transferred_count) do
+      %__MODULE__{stats | bytes_transferred: stats.bytes_transferred + newly_transferred_count}
+    end
+  end
+
   defstruct [
     :uploader,
     :downloader,
     :queue,
     :metadata,
-    # TODO move all these to stats
-    :bytes_transferred,
-    :upload_started_at,
-    :download_started_at
+    :stats
   ]
 
   @type peer_state ::
@@ -24,29 +51,12 @@ defmodule FileBeam.Core.FileBuffer do
           uploader: peer_state(),
           downloader: peer_state(),
           queue: [] | [binary],
-          metadata: map()
+          metadata: map(),
+          stats: Stats.t()
         }
 
   # NOTE: the uploader will block when the buffer gets to @max_queue_size
   @max_queue_size 5
-
-  defmodule Stats do
-    defstruct [
-      :bytes_transferred,
-      :upload_started_at,
-      :download_started_at,
-      :metadata
-    ]
-
-    def from_state(%FileBeam.Core.FileBuffer{} = state) do
-      %__MODULE__{
-        bytes_transferred: state.bytes_transferred,
-        upload_started_at: state.upload_started_at,
-        download_started_at: state.download_started_at,
-        metadata: state.metadata
-      }
-    end
-  end
 
   # ===========================================================================
   # Public API
@@ -94,8 +104,7 @@ defmodule FileBeam.Core.FileBuffer do
       downloader: nil,
       queue: [],
       metadata: metadata,
-      bytes_transferred: 0,
-      upload_started_at: DateTime.utc_now()
+      stats: Stats.new()
     }
 
     {:ok, state}
@@ -107,8 +116,9 @@ defmodule FileBeam.Core.FileBuffer do
 
   @impl GenServer
   @spec handle_call(term, term, t()) :: {:reply, term, t()} | {:noreply, t()}
-  def handle_call(:register_downloader, _from, state = %__MODULE__{downloader: nil}) do
-    state = %__MODULE__{state | downloader: :connected, download_started_at: DateTime.utc_now()}
+  def handle_call(:register_downloader, _from, state = %__MODULE__{downloader: nil, stats: stats}) do
+    stats = Stats.download_started(stats)
+    state = %__MODULE__{state | downloader: :connected, stats: stats}
     {:reply, {:ok, state.metadata}, state}
   end
 
@@ -175,10 +185,11 @@ defmodule FileBeam.Core.FileBuffer do
 
       [first | rest] ->
         first_byte_size = byte_size(first)
-        bytes_transferred = state.bytes_transferred + first_byte_size
+
+        stats = Stats.bytes_transferred(state.stats, first_byte_size)
 
         state =
-          %__MODULE__{state | queue: rest, bytes_transferred: bytes_transferred}
+          %__MODULE__{state | queue: rest, stats: stats}
           |> maybe_handle_waiting_uploader()
 
         {:reply, {:ok, first}, state}
@@ -194,7 +205,7 @@ defmodule FileBeam.Core.FileBuffer do
   # ---------------------------------------------------------------------------
 
   def handle_call(:get_stats, _from, state) do
-    {:reply, {:ok, __MODULE__.Stats.from_state(state)}, state}
+    {:reply, {:ok, state.stats}, state}
   end
 
   # ===========================================================================
