@@ -82,6 +82,10 @@ defmodule FileBeam.Core.FileBuffer do
     GenServer.call(server_reference, :get_stats)
   end
 
+  def get_metadata(server_reference) do
+    GenServer.call(server_reference, :get_metadata)
+  end
+
   def start_link(opts) do
     GenServer.start_link(__MODULE__, opts, opts)
   end
@@ -206,6 +210,10 @@ defmodule FileBeam.Core.FileBuffer do
 
   def handle_call(:get_stats, _from, state) do
     {:reply, {:ok, state.stats}, state}
+  end
+
+  def handle_call(:get_metadata, _from, state) do
+    {:reply, {:ok, state.metadata}, state}
   end
 
   # ===========================================================================

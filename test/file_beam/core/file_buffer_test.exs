@@ -15,6 +15,16 @@ defmodule FileBeam.Core.FileBufferTest do
     assert {:ok, "foo"} = FileBuffer.download_chunk(pid)
   end
 
+  test "you can get stats" do
+    pid = spawn_file_buffer()
+    assert {:ok, %FileBuffer.Stats{}} = FileBuffer.get_stats(pid)
+  end
+
+  test "you can get metadata" do
+    pid = spawn_file_buffer()
+    assert {:ok, %{}} = FileBuffer.get_metadata(pid)
+  end
+
   test "metadata gets forwarded to the downloader on registration" do
     metadata = %{foo: :bar}
     assert {:ok, pid} = FileBuffer.start_link(uploader_pid: self(), metadata: metadata)

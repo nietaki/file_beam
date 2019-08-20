@@ -38,7 +38,8 @@ defmodule FileBeam.Mixfile do
       {:mix_test_watch, "~> 0.8", only: :dev, runtime: false},
       {:wobserver, "~> 0.1.8"},
       {:exsync, "~> 0.2", only: :dev},
-      {:plug_cowboy, "~> 1.0"}
+      {:plug_cowboy, "~> 1.0"},
+      {:server_sent_event, "~> 1.0"}
     ]
   end
 

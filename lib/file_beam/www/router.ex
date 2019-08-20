@@ -6,7 +6,8 @@ defmodule FileBeam.WWW.Router do
     {%{path: []}, Actions.HomePage},
     {%{method: :POST, path: ["upload", _buid]}, Actions.Upload},
     {%{method: :GET, path: ["receive", _buid]}, Actions.Receive},
-    {%{method: :GET, path: ["download", _buid]}, Actions.Download}
+    {%{method: :GET, path: ["download", _buid]}, Actions.Download},
+    {%{method: :GET, path: ["stats_sse", _buid]}, Actions.StatsSSE}
   ])
 
   section([{Raxx.Logger, Raxx.Logger.setup(level: :debug)}], [
