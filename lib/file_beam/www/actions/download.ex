@@ -40,16 +40,17 @@ defmodule FileBeam.WWW.Actions.Download do
   end
 
   def handle_info(:more, state = %{buffer_pid: buffer_pid}) do
-    {:ok, chunk} = FileBuffer.download_chunk(buffer_pid)
+    {:ok, chunks} = FileBuffer.download_chunks(buffer_pid)
 
-    case chunk do
+    case chunks do
       :complete ->
         IO.puts("finishing download!")
         {[tail()], state}
 
-      chunk when is_binary(chunk) ->
+      reversed_chunks when is_list(reversed_chunks) ->
         send(self(), :more)
-        {[data(chunk)], state}
+        datas = Enum.reduce(reversed_chunks, [], fn chunk, acc -> [data(chunk) | acc] end)
+        {datas, state}
     end
   end
 

@@ -56,7 +56,7 @@ defmodule FileBeam.Core.FileBuffer do
         }
 
   # NOTE: the uploader will block when the buffer gets to @max_queue_size
-  @max_queue_size 5
+  @max_queue_size 10
 
   # ===========================================================================
   # Public API
@@ -70,8 +70,11 @@ defmodule FileBeam.Core.FileBuffer do
     GenServer.call(server_reference, :upload_done)
   end
 
-  def download_chunk(server_reference) do
-    GenServer.call(server_reference, :download_chunk, :infinity)
+  @doc """
+  returns the chunks reversed!
+  """
+  def download_chunks(server_reference) do
+    GenServer.call(server_reference, :download_chunks, :infinity)
   end
 
   def register_downloader(server_reference) do
@@ -135,13 +138,15 @@ defmodule FileBeam.Core.FileBuffer do
   # ---------------------------------------------------------------------------
 
   def handle_call({:upload_chunk, chunk}, from, state = %{queue: queue}) when is_binary(chunk) do
-    queue = queue ++ [chunk]
+    queue = [chunk | queue]
+
+    # IO.puts("queue size: #{Enum.count(queue)}, chunk size: #{byte_size(chunk)}")
 
     state =
       %{state | queue: queue}
       |> maybe_handle_waiting_downloader()
 
-    case Enum.count(queue) do
+    case length(queue) do
       short when short < @max_queue_size ->
         {:reply, {:ok, :uploaded}, state}
 
@@ -166,11 +171,11 @@ defmodule FileBeam.Core.FileBuffer do
   end
 
   # ---------------------------------------------------------------------------
-  # Download chunk
+  # Download chunks
   # ---------------------------------------------------------------------------
 
   def handle_call(
-        :download_chunk,
+        :download_chunks,
         _from,
         state = %__MODULE__{downloader: :connected, uploader: :done, queue: []}
       ) do
@@ -178,29 +183,28 @@ defmodule FileBeam.Core.FileBuffer do
     {:reply, {:ok, :complete}, state}
   end
 
-  def handle_call(:download_chunk, from, state = %__MODULE__{downloader: :connected}) do
-    # Process.sleep(500)
-
+  def handle_call(:download_chunks, from, state = %__MODULE__{downloader: :connected}) do
     case state.queue do
       [] ->
         # Logger.info("blocking on download")
         state = %__MODULE__{state | downloader: {:waiting, from}}
         {:noreply, state}
 
-      [first | rest] ->
-        first_byte_size = byte_size(first)
+      [_ | _] = all_chunks ->
+        # first_byte_size = byte_size(first)
 
-        stats = Stats.bytes_transferred(state.stats, first_byte_size)
+        new_byte_count = Enum.reduce(all_chunks, 0, fn chunk, acc -> byte_size(chunk) + acc end)
+        stats = Stats.bytes_transferred(state.stats, new_byte_count)
 
         state =
-          %__MODULE__{state | queue: rest, stats: stats}
+          %__MODULE__{state | queue: [], stats: stats}
           |> maybe_handle_waiting_uploader()
 
-        {:reply, {:ok, first}, state}
+        {:reply, {:ok, all_chunks}, state}
     end
   end
 
-  def handle_call(:download_chunk, _from, state = %__MODULE__{downloader: nil}) do
+  def handle_call(:download_chunks, _from, state = %__MODULE__{downloader: nil}) do
     {:reply, {:error, :downloader_not_registered}, state}
   end
 
@@ -237,6 +241,7 @@ defmodule FileBeam.Core.FileBuffer do
          state = %__MODULE__{downloader: {:waiting, from}, uploader: :done, queue: []}
        ) do
     Logger.info("telling waiting downloader the whole thing is finished")
+
     GenServer.reply(from, {:ok, :complete})
     %{state | downloader: :done}
   end
@@ -244,12 +249,11 @@ defmodule FileBeam.Core.FileBuffer do
   defp maybe_handle_waiting_downloader(state = %__MODULE__{downloader: {:waiting, from}}) do
     case state.queue do
       [] ->
-        Enum.map([], & &1)
         state
 
-      [first | rest] ->
-        GenServer.reply(from, {:ok, first})
-        %__MODULE__{state | downloader: :connected, queue: rest}
+      [_ | _] = chunks ->
+        GenServer.reply(from, {:ok, chunks})
+        %__MODULE__{state | downloader: :connected, queue: []}
     end
   end
 
@@ -259,7 +263,7 @@ defmodule FileBeam.Core.FileBuffer do
 
   @spec maybe_handle_waiting_uploader(t()) :: t()
   defp maybe_handle_waiting_uploader(state = %__MODULE__{uploader: {:waiting, from}}) do
-    case Enum.count(state.queue) do
+    case length(state.queue) do
       @max_queue_size ->
         state
 
