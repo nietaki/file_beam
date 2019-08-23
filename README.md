@@ -5,18 +5,19 @@
 - Run project test suite with `mix test`
 - You can see the wobserver at http://localhost:4001/
 
-## Action Plan
+# TODO
 
-- homepage javascript generates a uuid for upload path `/upload/<uuid>`
-- js makes the file request to `/upload/<uuid>`
-- Upload action handler:
-  - spawns a buffer gen_server
-  - feeds it with chunks whenever it can
-- Download action handler:
-  - looks up the file buffer gen_server
-  - repeatedly asks for more
-
-If the uploader/downloader dies, the FileBuffer already monitors them, sends a failure message and waits for them to die.
+- [ ] shorter ids (randomly generate a 10 character one like `DFI0dfdF3r` and make sure it's not used)
+- [ ] kill the FileBuffer process after a while after the transfer has been completed
+- [ ] SSE endpoint with stats, using periodic polling with `GenServer.call`
+- [ ] Put it up on gigalixir
+- [ ] UI on the uploader side
+  - [ ] copy the receive url
+  - [ ] hide the upload button after a file has been picked
+  - [ ] wire up the stats
+- [ ] UI on the downloader side
+  - [ ] wire up the stats
+- [ ] make sure we handle failure cases well (uploader / downloader dies)
 
 ## Docker commands
 
