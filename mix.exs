@@ -19,7 +19,7 @@ defmodule FileBeam.Mixfile do
   end
 
   def application do
-    [extra_applications: [:logger, :wobserver], mod: {FileBeam.Application, []}]
+    [extra_applications: [:logger], mod: {FileBeam.Application, []}]
   end
 
   defp elixirc_paths(:test), do: ["lib", "test/support"]
@@ -36,10 +36,11 @@ defmodule FileBeam.Mixfile do
       {:raxx_session, "~> 0.2.0"},
       {:dialyxir, "~> 0.5.1", only: [:dev, :test], runtime: false},
       {:mix_test_watch, "~> 0.8", only: :dev, runtime: false},
-      {:wobserver, "~> 0.1.8"},
+      {:wobserver, "~> 0.1.8", only: :dev},
       {:exsync, "~> 0.2", only: :dev},
-      {:plug_cowboy, "~> 1.0"},
-      {:server_sent_event, "~> 1.0"}
+      {:plug_cowboy, "~> 1.0", only: :dev},
+      {:server_sent_event, "~> 1.0"},
+      {:distillery, "~> 2.1"}
     ]
   end
 
