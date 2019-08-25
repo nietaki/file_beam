@@ -45,7 +45,10 @@ defmodule FileBeam.Mixfile do
   end
 
   defp aliases() do
-    []
+    [
+      test: "test --no-start",
+      "test.watch": "test.watch --no-start"
+    ]
   end
 
   # makes sure that if the project is run by docker-compose inside a container,
