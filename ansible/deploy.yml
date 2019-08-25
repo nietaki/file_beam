@@ -1,0 +1,33 @@
+- hosts: droplet
+  vars:
+    http_port: 80
+    https_port: 443
+  environment:
+    PORT: "{{ http_port }}"
+    SECURE_PORT: "{{ https_port }}"
+    SSL_CERTIFICATE: "filebeam.nietaki.com/fullchain.pem"
+    SSL_KEY: "filebeam.nietaki.com/privkey.pem"
+  remote_user: root
+  tasks:
+  - name: pwd
+    command: pwd
+    register: pwd_task
+  - debug:
+      msg: "{{ pwd_task.stdout }}"
+  - name: stop the old file_beam server
+    shell: "/opt/app/bin/file_beam stop"
+    ignore_errors: true
+  - name: clean up app directory
+    file:
+      path: /opt/app
+      state: absent
+  - name: create app directory
+    file:
+      path: /opt/app
+      state: directory
+  - name: unpack release
+    unarchive:
+      src: ../_build/prod/rel/file_beam/releases/0.1.0/file_beam.tar.gz
+      dest: /opt/app
+  - name: start the new file_beam server
+    shell: /opt/app/bin/file_beam start

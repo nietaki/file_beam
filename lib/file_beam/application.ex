@@ -65,10 +65,22 @@ defmodule FileBeam.Application do
   end
 
   defp certificate_path() do
-    Application.app_dir(:file_beam, "priv/localhost/certificate.pem")
+    case System.get_env("SSL_CERTIFICATE") do
+      none when none in [nil, ""] ->
+        Application.app_dir(:file_beam, "priv/localhost/certificate.pem")
+
+      some ->
+        Application.app_dir(:file_beam, Path.join("priv/", some))
+    end
   end
 
   defp certificate_key_path() do
-    Application.app_dir(:file_beam, "priv/localhost/certificate_key.pem")
+    case System.get_env("SSL_KEY") do
+      none when none in [nil, ""] ->
+        Application.app_dir(:file_beam, "priv/localhost/certificate_key.pem")
+
+      some ->
+        Application.app_dir(:file_beam, Path.join("priv/", some))
+    end
   end
 end
