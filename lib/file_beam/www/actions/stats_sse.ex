@@ -4,6 +4,8 @@ defmodule FileBeam.WWW.Actions.StatsSSE do
   # alias FileBeam.Core.FileBuffer
 
   def handle_head(request = %{path: ["stats_sse", buid]}, _state) do
+    # otherwise the individual messages don't get to the client
+    FileBeam.Middleware.ResponseCompression.set_flush_every_chunk(true)
     IO.inspect(buid)
     IO.puts("stats for #{buid}: #{inspect(self())}")
     IO.inspect(request)

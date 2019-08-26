@@ -5,6 +5,7 @@ defmodule FileBeam.Middleware.ResponseCompression do
   alias Raxx.Response
   alias Raxx.Data
   alias Raxx.Tail
+  alias __MODULE__, as: CompressionMiddleware
 
   @behaviour Middleware
 
@@ -13,6 +14,8 @@ defmodule FileBeam.Middleware.ResponseCompression do
   """
 
   # TODO check if the upstream server set a content-encoding already
+
+  @flush_every_chunk :flush_every_chunk
 
   defmodule State do
     defstruct [
@@ -69,8 +72,11 @@ defmodule FileBeam.Middleware.ResponseCompression do
     def compress(state, %Data{data: binary_data}) do
       # NOTE TODO FIXME flush= sync seems to be needed for SSE to work correctly
       # make it a config thing
-      compressed = 
-        :zlib.deflate(state.zstream, binary_data, :sync)
+      #
+      zflush = if CompressionMiddleware.flush_every_chunk?(), do: :sync, else: :none
+
+      compressed =
+        :zlib.deflate(state.zstream, binary_data, zflush)
         |> IO.iodata_to_binary()
 
       case compressed do
@@ -83,7 +89,7 @@ defmodule FileBeam.Middleware.ResponseCompression do
     end
 
     def compress(state, %Tail{} = tail) do
-      last_compressed = 
+      last_compressed =
         :zlib.deflate(state.zstream, "", :finish)
         |> IO.iodata_to_binary()
 
@@ -104,6 +110,29 @@ defmodule FileBeam.Middleware.ResponseCompression do
       do_compress_parts(state, rest, Enum.reverse(first_compressed) ++ acc)
     end
   end
+
+  # Public API
+
+  @doc """
+  Sets a value in the Context saying if every data chunk should be flushed
+
+  If set to true, makes things like SSE more robust. Shouldn't be set to
+  true for streaming data without meaningful chunks
+  """
+  def set_flush_every_chunk(boolean) when is_boolean(boolean) do
+    section =
+      Raxx.Context.retrieve(__MODULE__, %{})
+      |> Map.put(@flush_every_chunk, boolean)
+
+    Raxx.Context.set(__MODULE__, section)
+  end
+
+  def flush_every_chunk?() do
+    Raxx.Context.retrieve(__MODULE__, %{})
+    |> Map.get(@flush_every_chunk, false)
+  end
+
+  # callbacks
 
   @impl Middleware
   def process_head(%Request{} = request, config, inner_server) do
