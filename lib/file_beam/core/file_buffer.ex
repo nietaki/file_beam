@@ -251,9 +251,11 @@ defmodule FileBeam.Core.FileBuffer do
       [] ->
         state
 
-      [_ | _] = chunks ->
-        GenServer.reply(from, {:ok, chunks})
-        %__MODULE__{state | downloader: :connected, queue: []}
+      [_ | _] = all_chunks ->
+        new_byte_count = Enum.reduce(all_chunks, 0, fn chunk, acc -> byte_size(chunk) + acc end)
+        stats = Stats.bytes_transferred(state.stats, new_byte_count)
+        GenServer.reply(from, {:ok, all_chunks})
+        %__MODULE__{state | downloader: :connected, queue: [], stats: stats}
     end
   end
 
