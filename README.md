@@ -14,11 +14,11 @@
 - [x] Put it up on ~gigalixir~ DigitalOcean
 - [ ] UI on the uploader side
   - [ ] copy the receive url
-  - [ ] hide the upload button after a file has been picked
-  - [ ] wire up the stats
+  - [x] hide the upload button after a file has been picked
+  - [x] wire up the stats
   - [ ] don't show the download stuff until the FileBuffer is up
-- [ ] UI on the downloader side
-  - [ ] wire up the stats
+- [x] UI on the downloader side
+  - [x] wire up the stats
 - [ ] make sure we handle failure cases well (uploader / downloader dies)
 
 ## Docker commands

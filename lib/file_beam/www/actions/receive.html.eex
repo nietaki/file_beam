@@ -1,7 +1,7 @@
 <main class="centered">
   <section class="accent">
     <h1>Receive the file!</h1>
-      <a href="/download/<%= buid %>">download link - <%= buid %> </a>
+      <a href="/download/<%= buid %>" target="_blank">click to download</a>
     <div id="progress-container" style="display: none;">
       <div class="progress">
           <div class="progress-bar" id="progress-bar" role="progressbar" style="width: 0%"></div>

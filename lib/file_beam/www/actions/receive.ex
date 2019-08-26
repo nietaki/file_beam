@@ -4,8 +4,14 @@ defmodule FileBeam.WWW.Actions.Receive do
 
   @impl Raxx.SimpleServer
   def handle_request(%{path: ["receive", buid], method: :GET}, _state) do
-    # TODO, see if the downloading has started and don't show the page if it has
-    response(:ok)
-    |> render(buid, [])
+    case FileBeam.Application.lookup_buffer_server(buid) do
+      {:ok, _pid} ->
+        response(:ok)
+        |> render(buid, [])
+
+      {:error, :not_found} ->
+        response(:not_found)
+        |> FileBeam.WWW.Actions.NotFoundPage.render()
+    end
   end
 end

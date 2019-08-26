@@ -3,21 +3,22 @@
     <h1>File beam</h1>
     <input id="the-file" name="file" type="file" onchange="upload()" />
     <div id="download_link_area" style="display: none">
+    <!-- 
       <a href="/receive/<%= buid %>">receive link - <%= buid %> </a>
       <br />
       <a href="/download/<%= buid %>">download link - <%= buid %> </a>
-    </div>
+       -->
+      <code id="receive-link-tag"></code>
+      <br />
 
+      Give the above url to the file recipient
+    </div>
 
     <div id="progress-container" style="display: none;">
       <div class="progress">
           <div class="progress-bar" id="progress-bar" role="progressbar" style="width: 0%"></div>
       </div>
     </div>
-
-    <nav>
-      <a href="https://github.com/nietaki/file_beam">SOURCE CODE</a>
-    </nav>
   </section>
 </main>
 
@@ -37,6 +38,8 @@ successHandler = function(event) {
 }
 
 upload = function() {
+  $("#receive-link-tag").text(window.location.origin + "/receive/" + buid)
+  $("#the-file").hide()
   var fileInput = document.getElementById('the-file');
   console.log(fileInput.files); // A FileList with all selected files
   var file = fileInput.files[0];

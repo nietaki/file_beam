@@ -9,7 +9,7 @@ defmodule FileBeam.WWW.Actions.StatsSSE do
     :stats
   ]
 
-  @interval 2000
+  @interval 500
 
   def handle_head(request = %{path: ["stats_sse", buid]}, _config) do
     # otherwise the individual messages don't get to the client

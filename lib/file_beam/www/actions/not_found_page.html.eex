@@ -1,6 +1,6 @@
 <main class="centered">
   <section class="accent">
-    <%= page_header("Nothing here!") %>
+    <%= page_header("404") %>
     <p>
       <%= home_page_link() %>
     </p>
