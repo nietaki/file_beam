@@ -79,8 +79,6 @@ defmodule FileBeam.WWW.Actions.StatsSSE do
   end
 
   def get_sse_data(state, new_stats) do
-    IO.inspect(state)
-    IO.inspect(new_stats)
     content_length = Map.get(state.metadata, :content_length)
     bytes_transferred = new_stats.bytes_transferred
 

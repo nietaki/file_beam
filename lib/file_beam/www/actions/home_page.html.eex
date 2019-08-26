@@ -7,6 +7,14 @@
       <br />
       <a href="/download/<%= buid %>">download link - <%= buid %> </a>
     </div>
+
+
+    <div id="progress-container" style="display: none;">
+      <div class="progress">
+          <div class="progress-bar" id="progress-bar" role="progressbar" style="width: 0%"></div>
+      </div>
+    </div>
+
     <nav>
       <a href="https://github.com/nietaki/file_beam">SOURCE CODE</a>
     </nav>
@@ -47,5 +55,5 @@ upload = function() {
   $("#download_link_area").show(20);
 }
 
-stream_sse_for_build(buid);
+stream_sse_for_build(buid, update_progress_bar_with_stats);
 </script>

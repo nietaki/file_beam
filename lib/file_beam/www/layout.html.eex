@@ -31,14 +31,16 @@
           </li>
           -->
           <li class="nav-item">
-            <a class="nav-link" href="/foo">Foo</a>
+            <a class="nav-link" href="https://github.com/nietaki/file_beam">source on Github</a>
           </li>
+          <!--
           <li class="nav-item">
             <a class="nav-link" href="/">Bar</a>
           </li>
           <li class="nav-item">
             <a class="nav-link" href="/baz">Baz</a>
           </li>
+          -->
         </ul>
       </div>
     </nav>
