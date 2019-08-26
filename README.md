@@ -7,14 +7,16 @@
 
 # TODO
 
-- [ ] shorter ids (randomly generate a 10 character one like `DFI0dfdF3r` and make sure it's not used)
+- [x] shorter ids (randomly generate a 10 character one like `DFI0dfdF3r` 
+  - [ ] make sure it's not used)
 - [ ] kill the FileBuffer process after a while after the transfer has been completed
 - [ ] SSE endpoint with stats, using periodic polling with `GenServer.call`
-- [ ] Put it up on gigalixir
+- [x] Put it up on ~gigalixir~ DigitalOcean
 - [ ] UI on the uploader side
   - [ ] copy the receive url
   - [ ] hide the upload button after a file has been picked
   - [ ] wire up the stats
+  - [ ] don't show the download stuff until the FileBuffer is up
 - [ ] UI on the downloader side
   - [ ] wire up the stats
 - [ ] make sure we handle failure cases well (uploader / downloader dies)

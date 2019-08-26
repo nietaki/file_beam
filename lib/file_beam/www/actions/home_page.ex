@@ -5,7 +5,8 @@ defmodule FileBeam.WWW.Actions.HomePage do
 
   @impl Raxx.SimpleServer
   def handle_request(_request = %{method: :GET}, _state) do
-    buid = UUID.uuid4()
+    # TODO stop relying on the lack of collisions
+    buid = FileBeam.Utils.get_random_id()
 
     response(:ok)
     |> render(buid, [])
