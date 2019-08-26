@@ -41,8 +41,8 @@ defmodule FileBeam.WWW do
     stack =
       Raxx.Stack.new(
         [
-          {FileBeam.Middleware.ResponseCompression, []},
-          {FileBeam.Middleware.HttpsRedirect, []},
+          # {FileBeam.Middleware.ResponseCompression, []},
+          # {FileBeam.Middleware.HttpsRedirect, []},
           {Raxx.Static, @static_setup}
         ],
         {__MODULE__.Router, config}
