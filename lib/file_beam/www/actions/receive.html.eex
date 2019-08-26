@@ -7,3 +7,8 @@
     </nav>
   </section>
 </main>
+
+<%= javascript_variables buid: buid %>
+  <script>
+    stream_sse_for_build(buid);
+  </script>

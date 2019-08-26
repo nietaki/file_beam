@@ -47,5 +47,5 @@ upload = function() {
   $("#download_link_area").show(20);
 }
 
-stream_sse_for_build("some_buid");
+stream_sse_for_build(buid);
 </script>

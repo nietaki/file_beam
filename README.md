@@ -10,7 +10,7 @@
 - [x] shorter ids (randomly generate a 10 character one like `DFI0dfdF3r` 
   - [ ] make sure it's not used)
 - [ ] kill the FileBuffer process after a while after the transfer has been completed
-- [ ] SSE endpoint with stats, using periodic polling with `GenServer.call`
+- [x] SSE endpoint with stats, using periodic polling with `GenServer.call`
 - [x] Put it up on ~gigalixir~ DigitalOcean
 - [ ] UI on the uploader side
   - [ ] copy the receive url
