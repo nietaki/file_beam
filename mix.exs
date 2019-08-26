@@ -28,7 +28,8 @@ defmodule FileBeam.Mixfile do
   defp deps do
     [
       {:uuid, "~> 1.1"},
-      {:ace, "~> 0.18.6"},
+      # {:ace, "~> 0.18.6"},
+      {:ace, github: "nietaki/Ace", branch: "disable-http2"},
       {:raxx_logger, "~> 0.2.2"},
       {:jason, "~> 1.0"},
       {:raxx_view, "~> 0.1.7"},
@@ -45,7 +46,10 @@ defmodule FileBeam.Mixfile do
   end
 
   defp aliases() do
-    []
+    [
+      test: "test --no-start",
+      "test.watch": "test.watch --no-start"
+    ]
   end
 
   # makes sure that if the project is run by docker-compose inside a container,

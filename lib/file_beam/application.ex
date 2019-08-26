@@ -10,7 +10,8 @@ defmodule FileBeam.Application do
     secure_options = [
       port: secure_port(),
       certfile: certificate_path(),
-      keyfile: certificate_key_path()
+      keyfile: certificate_key_path(),
+      alpn_preferred_protocols: ["http/1.1"]
     ]
 
     children = [
