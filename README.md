@@ -3,11 +3,12 @@
 - Install dependencies with `mix deps.get`
 - Start your service with `iex -S mix`
 - Run project test suite with `mix test`
+- You can access the file_beam server at http://localhost:8080/
 - You can see the wobserver at http://localhost:4001/
 
 # TODO
 
-- [x] shorter ids (randomly generate a 10 character one like `DFI0dfdF3r` 
+- [x] shorter ids (randomly generate a 10 character one like `DFI0dfdF3r`
   - [ ] make sure it's not used)
 - [ ] kill the FileBuffer process after a while after the transfer has been completed
 - [x] SSE endpoint with stats, using periodic polling with `GenServer.call`
